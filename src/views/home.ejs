@@ -1,0 +1,110 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+      <span class="navbar-text">
+        Welcome, <%= user.name %>!
+      </span>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto"> <!-- Changed ml-auto to ms-auto for newer Bootstrap version -->
+          <li class="nav-item">
+            <form action="/change-password" method="get" class="d-inline">
+              <input type="hidden" name="userID" value="<%= user._id %>">
+              <input type="hidden" name="email" value="<%= user.email %>">
+              <button type="submit" class="btn btn-warning">Change Password</button>
+            </form>
+          </li>
+          <li class="nav-item ms-2"> <!-- ms-2 for spacing between buttons -->
+            <form action="/logout" method="post" class="d-inline">
+              <input type="hidden" name="userID" value="<%= user._id %>">
+              <input type="hidden" name="email" value="<%= user.email %>">
+              <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  
+  <div class="container mt-5">
+    <h1>Home Page</h1>
+    <p>Welcome to your home page, <%= user.name %>. Feel free to navigate or update your account settings.</p>
+  </div>
+  
+  <script>
+    document.querySelector('.btn-warning').addEventListener('click', async function(event) {
+      event.preventDefault(); // Prevent form submission
+  
+      const userId = "<%= user._id %>";
+      const url = `http://localhost:3200/api/users/home/change_password/${userId}`;
+  
+      // Fetch the authToken from localStorage
+      const token = localStorage.getItem('authToken');
+      
+      try {
+        // Make a GET request with the authToken in the Authorization header and Content-Type as application/json
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': token
+          }
+        });
+  
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('text/html')) {
+          // If HTML, load the new page
+          const html = await response.text();
+  
+          // Update the browser URL without reloading the page
+          history.pushState(null, null, url);
+  
+          // Replace the current document content with the new HTML content
+          document.open();
+          document.write(html);
+          document.close();
+        } else {
+          console.error('Expected HTML response, but received:', contentType);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
+  
+    document.querySelector('.btn-danger').addEventListener('click', async function(event) {
+      event.preventDefault(); // Prevent the default form submission behavior
+  
+      // Remove the authToken from local storage
+      localStorage.removeItem('authToken');
+  
+      // Fetch the HTML content for the sign-in page with a success message
+      const signInUrl = '/api/users/signIn?message=logout successful';
+  
+      try {
+        const response = await fetch(signInUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+  
+        const contentType = response.headers.get('Content-Type');
+        if (contentType && contentType.includes('text/html')) {
+          // If HTML, load the new page
+          const html = await response.text();
+  
+          // Update the browser URL to the sign-in page
+          history.pushState(null, null, signInUrl);
+  
+          // Replace the current document content with the new HTML content
+          document.open();
+          document.write(html);
+          document.close();
+        } else {
+          console.error('Expected HTML response, but received:', contentType);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
+  </script>
+  
+  

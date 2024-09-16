@@ -1,0 +1,82 @@
+<div class="signup container mt-5">
+  <!-- Error div, render content only if error is passed from backend -->
+  <div class="error mb-3">
+    <% if (typeof error !== 'undefined' && error) { %>
+      <div class="alert alert-danger">
+        <%= error %>
+      </div>
+    <% } %>
+  </div>
+  
+  <div class="card p-4 shadow-sm">
+    <h2 class="mb-4 text-center">Sign Up</h2>
+
+    <!-- Name Field -->
+    <div class="form-group mb-3">
+      <label for="name">Name</label>
+      <input type="text" class="form-control" id="name" name="name" placeholder="Enter your name" required>
+    </div>
+
+    <!-- Email Field -->
+    <div class="form-group mb-3">
+      <label for="email">Email</label>
+      <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+    </div>
+
+    <!-- Password Field -->
+    <div class="form-group mb-3">
+      <label for="password">Password</label>
+      <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+    </div>
+
+    <!-- Confirm Password Field -->
+    <div class="form-group mb-3">
+      <label for="confirm_password">Confirm Password</label>
+      <input type="password" class="form-control" id="confirm-password" name="confirmPassword" placeholder="Confirm your password" required>
+    </div>
+
+    <!-- Sign Up Button -->
+    <button type="button" class="btn btn-primary w-100" id="sign-up-button">Sign Up</button>
+
+    <!-- Back to Sign In Button -->
+    <div class="text-center mt-3">
+      <a href="http://localhost:3200/api/users/signIn" class="btn btn-secondary">Back to Sign In</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('sign-up-button').addEventListener('click', async function () {
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+
+    const response = await fetch('/api/users/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password, confirmPassword }),
+    });
+
+    const result = await response.json();
+
+    if (result.message === 'failure') {
+      // Clear the error message area
+      document.querySelector('.error').innerHTML = '';
+
+      // Render the error message
+      document.querySelector('.error').innerHTML = `
+          <div class="alert alert-danger">
+              ${result.error}
+          </div>
+      `;
+    } else {
+        // Handle successful signup
+        const successMessage = encodeURIComponent('Sign up successful');
+        window.location.href = `/api/users/signIn?message=${successMessage}`; // Adjust this URL if necessary
+    }
+
+  });
+</script>
